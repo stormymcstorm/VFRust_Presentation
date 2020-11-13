@@ -1,0 +1,6 @@
+[package]
+name = "prusti_demo"
+version = "0.1.0"
+authors = ["Carson Storm <stormymcstorm@gmail.com>"]
+
+[dependencies]

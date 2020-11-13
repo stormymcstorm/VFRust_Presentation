@@ -1,0 +1,3 @@
+[submodule "electrolysis"]
+	path = electrolysis
+	url = git@github.com:Kha/electrolysis.git

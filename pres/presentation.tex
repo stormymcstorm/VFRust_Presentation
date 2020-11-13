@@ -1,0 +1,567 @@
+\documentclass[usenames,dvipsnames,aspectratio=169]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{emerald}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[backend=biber,style=ieee]{biblatex}
+\usepackage{minted}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{fontspec}
+
+%%%%%%%%%%%%%%%%%%%%%%
+% SETUP BEAMER THEME %
+%%%%%%%%%%%%%%%%%%%%%%
+\setbeamercolor{headline}{fg=white}
+\setbeamercolor{institute}{fg=white}
+\setbeamercolor{date}{fg=white}
+\setbeamercolor{author}{fg=white}
+\setbeamercolor{author}{fg=white}
+\setbeamercolor{section in toc}{fg=white}
+\setbeamercolor{subsection in toc}{fg=white}
+\setbeamercolor{subsubsection in toc}{fg=white}
+\setbeamercolor{frametitle}{fg=white}
+\setbeamercolor{structure}{fg=white}
+\setbeamercolor{item}{fg=white}
+\setbeamercolor{itemize item}{fg=white}
+\setbeamercolor{item projected}{fg=white}
+\setbeamercolor{alerted text}{fg=white}
+\setbeamercolor{normal text}{fg=white}
+\setbeamercolor{block body}{fg=black,bg=white}
+
+\setbeamerfont{frametitle}{size=\huge, series=\ECFAugie}
+\setbeamerfont{framesubtitle}{size=\large, series=\ECFAugie}
+\setbeamerfont{title}{size=\huge, series=\ECFAugie}
+\setbeamerfont{author}{size=\large, series=\ECFAugie}
+\setbeamerfont{date}{size=\large, series=\ECFAugie}
+\setbeamerfont{institute}{size=\large, series=\ECFAugie}
+\setbeamerfont{caption}{series=\ECFAugie}
+\setbeamerfont{section in toc}{size=\small, series=\ECFAugie}
+\setbeamerfont{subsection in toc}{size=\small, series=\ECFAugie}
+% \setmainfont{\ECFAugie}
+
+\setbeamercolor{background canvas}{bg=black}
+\setbeamertemplate{background}
+{\includegraphics[width=\paperwidth,height=\paperheight]{background.jpg}}
+
+\setbeamertemplate{itemize item}{\usebeamercolor[fg]{item}\small\ECFAugie{-}\usebeamercolor[fg]{itemize item}}
+
+\setbeamertemplate{frametitle}{
+    \begin{beamercolorbox}[center]{frametitle}
+        \vskip17pt
+        \usebeamerfont{frametitle}
+        \insertframetitle \\
+        \vspace{0.5em}
+        \usebeamerfont{framesubtitle}\insertframesubtitle
+    \end{beamercolorbox}
+}
+
+\setbeamertemplate{section page}
+{
+    \begingroup
+    \begin{beamercolorbox}[sep=12pt,center]{section title}
+    \usebeamerfont{section title}\insertsection\par
+    \end{beamercolorbox}
+    \endgroup
+}
+
+\setbeamertemplate{subsection page}
+{
+    \begingroup
+    \begin{beamercolorbox}[sep=12pt,center]{subsection title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+    \end{beamercolorbox}
+    \endgroup
+}
+
+\setbeamertemplate{bibliography item}[text]
+
+%% remove navigation symbols
+\setbeamertemplate{navigation symbols}{}
+
+%%%%%%%%%%%%%
+% PDF SETUP %
+%%%%%%%%%%%%%
+\hypersetup{pdfstartview={Fit}}
+
+%%%%%%%%%%%%%%
+% REFERENCES %
+%%%%%%%%%%%%%%
+\addbibresource{references.bib}
+\renewcommand{\bibfont}{\footnotesize}
+
+%%%%%%%%%%%%
+% LISTINGS %
+%%%%%%%%%%%%
+\usemintedstyle{tango}
+
+\usepackage{newunicodechar}
+\newfontfamily{\freeserif}{DejaVu Sans}
+\newunicodechar{ℕ}{\freeserif{ℕ}}
+\newunicodechar{ₐ}{\freeserif{ₐ}}
+\newunicodechar{₁}{\freeserif{₁}}
+\newunicodechar{∈}{\freeserif{∈}}
+\newunicodechar{𝓞}{\ensuremath{\mathcal{O}}}
+\newunicodechar{∉}{\freeserif{∉}}
+\newunicodechar{Π}{\freeserif{Π}}
+\newunicodechar{⦃}{\freeserif{⦃}}
+\newunicodechar{⦄}{\freeserif{⦄}}
+\newunicodechar{ᵇ}{\freeserif{ᵇ}}
+
+
+%%%%%%%%%%%%%%%%%
+% MATH COMMANDS %
+%%%%%%%%%%%%%%%%%
+\newcommand{\N}{\mathbb{N}}
+
+%%%%%%%%%%%%%%%%%%%%
+% TITLE PAGE SETUP %
+%%%%%%%%%%%%%%%%%%%%
+\author{Carson Storm}
+\date{November 13 2020}
+\title{Formal Verification in Rust}
+\institute[]{University of Utah}
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%%
+% SLIDES %
+%%%%%%%%%%
+
+\begin{frame}{Outline}
+    \tableofcontents
+\end{frame}
+
+\section{Why Rust?}
+\begin{frame}{Why Rust?}
+    \begin{itemize}
+        \item a low-level language that offers zero cost abstraction
+        \item a multi-paradigm language
+        \item guarantees memory safety at compile time
+    \end{itemize}
+\end{frame}
+
+\subsection{Rust memory safety}
+\begin{frame}[fragile]{Rust memory safety (moves)}
+    \begin{block}{}
+        \begin{minted}[autogobble]{rust}
+            fn first<S,T>((s,_):(S,T)) -> S {
+                s
+            }
+            ...
+            
+            let p: (S,T) = ...;
+            let s = first(p);
+            // let t = second(p); // error[E0382]: use of moved value: `p`
+        \end{minted}   
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Rust memory safety (borrows I)}
+    \begin{block}{}
+        \begin{minted}[autogobble]{rust}
+            fn first<S,T>(&(ref s,_):&(S,T)) -> &S {
+                s
+            }
+            ...
+            
+            let p: (S,T) = ...;
+            let s = first(&p);
+            let t = second(&p);
+        \end{minted}
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Rust memory safety (borrows II)}
+    \begin{block}{}
+        \begin{minted}[autogobble]{rust}
+            fn first<S,T>(&(ref s,_):&(S,T)) -> &S {
+                s
+            }
+            ...
+            
+            let p: (S,T) = ...;
+            let s = first(&p);      // immutable borrow occurs here
+            let t = second(&mut p); // mutable borrow occurs here
+
+            // immutable borrow ends here
+            // will result in compiler error
+        \end{minted}
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Rust memory safety (lifetimes I)}
+    \begin{block}{}
+        \begin{minted}[autogobble]{rust}
+            fn first<S,T>(&(ref s,_):&(S,T)) -> &S {
+                s
+            }
+            ...
+            let s = {
+                let p: (S,T) = ...;
+    
+                return first(&p);
+                // p is freed here, but we are trying to return a reference to it
+                // this will result in a compilation error
+            }
+        \end{minted}
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Rust memory safety (lifetimes II)}
+    \begin{block}{}
+        \begin{minted}[autogobble]{rust}
+            fn first<'a, S,T>(&(ref s,_): &'a (S,T)) -> &'a S {
+                s
+            }
+            ...
+            let p: (S,T) + 'a = ...;
+            let s: &'a S = first(&p);
+        \end{minted}
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Rust memory safety}
+    \begin{itemize}
+        \item All references are guaranteed to point to valid memory
+        \item Alias is allowed, but only for non mutable references
+            \begin{block}{}
+                \begin{minted}[autogobble]{rust}
+                    fn compute(input: &u32, output: &mut u32) {
+                        if *input > 10 { *output = 1; }
+                        if *input > 5 { *output *= 2;}
+                    }
+                    ...
+                    compute(&x, &mut x); // this will result in a compiler error
+                \end{minted}
+            \end{block}
+        \item Eliminates data races
+    \end{itemize}
+\end{frame}
+
+\subsection{Rust vs. C}
+\begin{frame}[fragile]{Rust vs. C}
+    \begin{block}{}
+        \begin{minted}[autogobble]{c}
+            void client(list * a, list *b) {
+                int old_len = b->len;
+                append(a, 100);
+                assert(b->len == old_len);
+            }
+        \end{minted}
+    \end{block}
+    \begin{itemize}
+        \item Could have memory errors in \mintinline[bgcolor=white]{c}{b->len}.
+        \item Could have aliasing (eg. if \mintinline[bgcolor=white]{c}{a = b}).
+        \item Could have data races if another thread mutates \mintinline[bgcolor=white]{c}{a} or \mintinline[bgcolor=white]{c}{b}.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Rust vs. C}
+    \begin{block}{}
+        \begin{minted}[autogobble]{rust}
+            fn client(a: &mut List, b: &mut List) {
+                let old_len = b.len();
+                append(a, 100);
+                assert!(b->len == old_len);
+            }
+        \end{minted}
+    \end{block}
+    \begin{itemize}
+        \item Memory is always valid so \mintinline[bgcolor=white]{c}{b.len()} will not result in a memory error.
+        \item Mutable references cannot alias, so \mintinline[bgcolor=white]{c}{a} and \mintinline[bgcolor=white]{c}{b} are disjoint.
+        \item Only one mutable reference is allowed at a time, so another thread cannot mutate \mintinline[bgcolor=white]{c}{a} or \mintinline[bgcolor=white]{c}{b}.
+    \end{itemize}
+\end{frame}
+
+\section{Formal Verification in Rust with Lean}
+\begin{frame}\sectionpage\end{frame}
+
+\subsection{What is Lean?}
+\begin{frame}[fragile]{What is Lean?}
+    \begin{itemize}
+        \item Lean is a theorem prover and programming language developed at 
+            Microsoft Research
+        \item Provides some automatic theorem proving, but focuses on the 
+            verification of theorem.
+        \item Has been used to formalize abstract algebra, group theory, number theory,
+            topology, computability, etc.
+        \item Based on Dependent Type Theory
+    \end{itemize}
+
+    \begin{block}{}
+        \begin{minted}[breaklines, autogobble, bgcolor=white]{lean}
+            theorem halting_problem (n) : ¬ computable_pred (λ c, (eval c n).dom)
+            | h := rice {f | (f n).dom} h nat.partrec.zero nat.partrec.none trivial
+        \end{minted}
+    \end{block}
+\end{frame}
+
+\subsubsection{Type Theory}
+\begin{frame}{Type Theory}{What is Type Theory?}
+    \begin{itemize}
+        \item A logical system that can server as a replacement for set theory
+        \item Judgments are made through type checking. A proof of a theorem is
+            considered valid if it has the same type as the theorem.
+        \item Does not depend on implementation details. 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Type Theory}{Constructive vs. Classical Logic}
+    \begin{itemize}
+        \item Constructive logic must provide an example for proposition of the
+            form
+            $$
+                \exists x \in \N, x > 1
+            $$
+            where as, in classical logic, an example is not always known.
+
+        \item Does not allow for statements such as $p \land \lnot p$ or $\lnot \lnot p \implies p$.
+            \begin{itemize}
+                \item This allows for type theory to handle undecidable problems
+                \item It's not always true that $p$ is either true of false.
+            \end{itemize}
+    \end{itemize}
+
+\end{frame}
+
+\subsubsection{Lean Demo}
+\begin{frame}
+    \begingroup
+    \begin{beamercolorbox}[sep=12pt,center]{section title}
+    \usebeamerfont{frametitle}{Lean Demo}
+    \end{beamercolorbox}
+    \endgroup
+\end{frame}
+
+\subsection{Functional Purification}
+\begin{frame}[fragile]{Functional Purification}
+    Since mutability is localized in Rust we perform functional rewrites
+    \begin{columns}
+        \column{.5\textwidth}
+        \begin{block}{}
+            \begin{minted}[autogobble]{rust}
+                p.x += 1
+            \end{minted}
+        \end{block}
+
+        \begin{block}{}
+            \begin{minted}[autogobble]{rust}
+                // where f(& mut Point) -> A
+                let x = f(&mut p) 
+            \end{minted}
+        \end{block}
+        
+        \column{.5\textwidth}
+        \begin{block}{}
+            \begin{minted}[autogobble]{rust}
+                let p = Point {x = p.x + 1, ..p}
+            \end{minted}
+        \end{block}
+
+        \begin{block}{}
+            \begin{minted}[autogobble]{rust}
+                // where f(Point) -> (A, Point)
+                let (x,p) = f(p) 
+            \end{minted}
+        \end{block}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Specifications}
+    \begin{block}{}
+        \begin{minted}[autogobble, breaklines]{lean}
+            theorem core.slice.binary_search.sem : ∀ {T : Type} [Ord' T]
+                (self : list T) (needle : T), sorted le self →
+                option.any binary_search_res (binary_search self needle)
+        \end{minted}
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Specifications}
+    \begin{block}{}
+        \begin{minted}[autogobble,breaklines]{lean}
+            inductive binary_search_res : Result usize usize → Prop :=
+            -- if the value is found then Ok is returned, containing the index of the matching element
+            | found     : Πi, nth self i = some needle → binary_search_res (Result.Ok i)
+            -- if the value is not found then Err is returned, containing the index where a matching
+            -- element could be inserted while maintaining sorted order.
+            | not_found : Πi, needle ∉ self → sorted le (insert_at self i needle) →
+                binary_search_res (Result.Err i)
+        \end{minted}
+    \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Translation}
+    \begin{columns}
+        \column{.5\textwidth}
+        \begin{block}{}
+            \begin{minted}[autogobble]{rust}
+                fn f(i: i32) -> i32 {
+                    if i == 42 {
+                        1
+                    }
+                    else {
+                        0
+                    }
+                }
+            \end{minted}
+        \end{block}
+
+        \column{.5\textwidth}
+        \begin{block}{}
+            \begin{minted}[autogobble, breaklines]{lean}
+                definition test.f (iₐ : i32) : sem (i32) :=
+                let' «i$2» ← iₐ;
+                let' t4 ← «i$2»;
+                let' t3 ← t4 =ᵇ (42 : int);
+                if t3 = bool.tt then
+                let' ret ← (1 : int);
+                return (ret)
+                else
+                let' ret ← (1 : int);
+                return (ret)
+            \end{minted}
+        \end{block}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Translation}
+    \begin{columns}
+        \column{.5\textwidth}
+        \begin{block}{}
+            \begin{minted}[autogobble]{rust}
+                struct Point {x: i32, y: i32}
+
+                fn main() {
+                    let p = Point {x: 10, y: 11};
+                    let px: i32 = p.x;
+                }
+            \end{minted}
+        \end{block}
+
+        \column{.5\textwidth}
+        \begin{block}{}
+            \begin{minted}[autogobble, breaklines]{lean}
+                structure test.Point := mk {} ::
+                (x : i32)
+                (y : i32)
+
+                definition test.main : sem (unit) :=
+                let' «p$1» ← test.Point.mk (10 : int) (11 : int);
+                let' t3 ← (test.Point.x «p$1»);
+                let' «px$2» ← t3;
+                let' ret ← ⋆;
+                return (⋆)
+            \end{minted}
+        \end{block}
+    \end{columns}
+\end{frame}
+
+\subsubsection{Electrolysis Demo}
+\begin{frame}
+    \begingroup
+    \begin{beamercolorbox}[sep=12pt,center]{section title}
+    \usebeamerfont{frametitle}{Electrolysis Demo}
+    \end{beamercolorbox}
+    \endgroup
+\end{frame}
+
+\section{Formal Verification in Rust with Prusti}
+\begin{frame}\sectionpage\end{frame}
+
+\subsection{How is Prusti different?}
+\begin{frame}[fragile]{How is Prusti different?}
+    \begin{itemize}
+        \item Relies on a SMT solver to verify program
+        \item Embeds specification directly in source
+    \end{itemize}
+    \begin{block}{}
+        \begin{minted}[autogobble]{rust}
+            #[ensures(result >= a && result >= b)]
+            #[ensures(result == a || result == b)]
+            fn max(a: i32, b: i32) -> i32 {
+                if a < b {
+                    b
+                } else {
+                    a
+                }
+            }
+        \end{minted}
+    \end{block}
+\end{frame}
+
+\subsection{Prusti Design}
+\begin{frame}{Prusti Design}
+    \begin{block}{}
+        \centering\includegraphics[width=\textwidth]{prusti_workflow.png}
+    \end{block}
+\end{frame}
+
+\subsection{What is Viper?}
+\begin{frame}[fragile]{What is Viper?}
+    \begin{itemize}
+        \item A language independent verification tool built on top of Z3
+        \item Prusti transpiles the rust source to viper statements
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Viper Translation}
+    \begin{columns}
+        \column{.5\textwidth}
+        \begin{block}{}
+            \begin{minted}[autogobble]{rust}
+                struct List {
+                    val: i32;
+                    next: Option<Box<List>>
+                }
+            \end{minted}
+        \end{block}
+        \begin{block}{}
+            \begin{minted}[autogobble]{rust}
+                fn client(a:&mut List, b:&mut List)
+            \end{minted}
+        \end{block}
+
+        \column{.5\textwidth}
+        \begin{block}{}
+            \begin{minted}[autogobble]{text}
+                predicate List(self: Ref) {
+                    acc(self.val) *
+                    acc(self.next) *
+                    i32(self.val) *
+                    OptionBoxList(self.next)
+                }
+            \end{minted}
+        \end{block}
+        \begin{block}{}
+            \begin{minted}[autogobble]{text}
+                method client(a : Ref, b: Ref)
+                    requires List(a) * List(b)
+                    ensures List(a) * List(b)
+            \end{minted}
+        \end{block}
+    \end{columns}
+\end{frame}
+
+\subsection{Prusti Demo}
+\begin{frame}
+    \begingroup
+    \begin{beamercolorbox}[sep=12pt,center]{section title}
+    \usebeamerfont{frametitle}{Prusti Demo}
+    \end{beamercolorbox}
+    \endgroup
+\end{frame}
+
+\section{Further Reading}
+\begin{frame}[allowframebreaks]
+    \frametitle{Further Reading}
+    \nocite{*}
+    \printbibliography
+\end{frame}
+    
+\end{document}
